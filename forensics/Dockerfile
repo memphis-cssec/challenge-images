@@ -20,8 +20,7 @@ EOF
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF 
         build-essential
         ca-certificates
         curl
@@ -33,8 +32,7 @@ EOF
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF 
         autoconf
         bc
         bison
@@ -77,8 +75,7 @@ EOF
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF
         apache2
         arping
         bash-builtins
@@ -164,17 +161,38 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         zsh
 EOF
 
-# forensics
+# forensics and progs students asked
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF
+    forensics-full
+    snapd
+    bat
+    hexyl
+EOF
+
+# volatility prereqs (prob have them but just in case)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-    forensics-all
-    sleuthkit
-    ext4magic
-    snapd
+    python2.7 
+    python3-pip 
+    python-setuptools 
+    build-essential 
+    python-dev-is-python2
 EOF
 
+# volatility
+RUN <<EOF
+    pip install distorm3==3.4.4
+    git clone https://github.com/volatilityfoundation/volatility.git
+    chmod +x volatility/vol.py
+    mv volatility /opt
+    ln –s /opt/volatility/vol.py /usr/bin/vol.py
+EOF
+
+# new autopsy
 RUN <<EOF
     snap install autopsy
 EOF
