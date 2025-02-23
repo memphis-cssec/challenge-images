@@ -166,7 +166,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF
     forensics-full
-    snapd
     bat
     hexyl
 EOF
@@ -176,25 +175,44 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && xargs apt-get install --no-install-recommends -yqq <<EOF && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-    python2.7 
     python3-pip 
     python-setuptools 
     build-essential 
-    python-dev-is-python2
 EOF
 
 # volatility
 RUN <<EOF
-    pip install distorm3==3.4.4
-    git clone https://github.com/volatilityfoundation/volatility.git
-    chmod +x volatility/vol.py
-    mv volatility /opt
-    ln –s /opt/volatility/vol.py /usr/bin/vol.py
+    pip3 install volatility3
+    mkdir -o /opt/volatility3/symbols
+    cd /opt/volatility3/symbols
+    wget https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip
+    wget https://downloads.volatilityfoundation.org/volatility3/symbols/linux.zip
 EOF
 
 # new autopsy
 RUN <<EOF
-    snap install autopsy
+    cd /opt
+    mkdir sleuthkit
+    cd sleuthkit
+    wget https://github.com/sleuthkit/sleuthkit/releases/download/sleuthkit-4.12.1/sleuthkit-java_4.12.1-1_amd64.deb
+    apt update
+    apt -y install ./sleuthkit-java_4.12.1-1_amd64.deb
+    cd /opt
+    mkdir autopsy
+    cd autopsy
+    wget https://github.com/sleuthkit/autopsy/releases/download/autopsy-4.21.0/autopsy-4.21.0.zip
+    apt -y install \
+        openjdk-17-jdk openjdk-17-jre \
+        build-essential autoconf libtool automake git zip wget ant \
+        libde265-dev libheif-dev \
+        libpq-dev \
+        testdisk libafflib-dev libewf-dev libvhdi-dev libvmdk-dev \
+        libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+        gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x \
+        gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+    wget https://raw.githubusercontent.com/sleuthkit/autopsy/refs/heads/develop/linux_macos_install_scripts/install_application.sh
+    chmod +x ./install_application.sh
+    ./install_application.sh -z ./autopsy-4.21.0.zip -i /opt/autopsy -j $(update-java-alternatives -l | grep java-1.17 | awk '{print $3}')
 EOF
 
 RUN rm -f /usr/lib/python3.*/EXTERNALLY-MANAGED
