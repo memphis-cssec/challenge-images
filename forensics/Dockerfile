@@ -183,7 +183,7 @@ EOF
 # volatility
 RUN <<EOF
     pip3 install volatility3
-    mkdir -o /opt/volatility3/symbols
+    mkdir -p /opt/volatility3/symbols
     cd /opt/volatility3/symbols
     wget https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip
     wget https://downloads.volatilityfoundation.org/volatility3/symbols/linux.zip
